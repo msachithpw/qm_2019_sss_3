@@ -10,7 +10,21 @@ def orb(ao_index):
     return orbital_types[orb_index]
 
 def ao_index(atom_p, orb_p):
-    '''Returns the atomic orbital index for a given atom index and orbital type.'''
+    """
+    Returns the atomic orbital index for a given atom index and orbital type.
+
+    Parameters
+    ----------
+    atom_p: int
+        atomic index
+    orb_p: str
+        atomic orbital
+    Returns
+    -------
+    p: int
+        Returns the atomic orbital index for a given atom index and orbital type. 
+
+    """
     p = atom_p * orbitals_per_atom
     p += orbital_types.index(orb_p)
     return p
@@ -33,7 +47,23 @@ def hopping_energy(o1, o2, r12, model_parameters):
     return ans
 
 def coulomb_energy(o1, o2, r12):
-    '''Returns the Coulomb matrix element for a pair of multipoles of type o1 & o2 separated by a vector r12.'''
+    """
+    Returns the Coulomb matrix element for a pair of multipoles of type o1 & o2 separated by a vector r12.
+
+    Parameters
+    ----------
+    o1: str
+        type of first orbital
+    o2: str
+        type of second orbital
+    r12: np.array
+        separation of orbital one and two
+    Returns
+    -------
+    ans: flot
+        Coulomb matrix element for a pair of multipoles of type o1 & o2 separated by a vector r12.
+
+    """
     r12_length = np.linalg.norm(r12)
     if o1 == 's' and o2 == 's':
         ans = 1.0 / r12_length
@@ -171,7 +201,20 @@ def calculate_fock_matrix(hamiltonian_matrix, interaction_matrix,
     return fock_matrix
 
 def calculate_density_matrix(fock_matrix):
-    '''Returns the 1-electron density matrix defined by the input Fock matrix.'''
+    """
+    Returns the 1-electron density matrix defined by the input Fock matrix.
+
+    Parameters
+    ----------
+    fock_matrix: np.array
+        Fock matrix
+
+    Returns
+    -------
+    density_matrix: np.array
+       1-electron density matrix defined by the input Fock matrix 
+
+    """
     num_occ = (ionic_charge // 2) * np.size(fock_matrix,
                                             0) // orbitals_per_atom
     orbital_energy, orbital_matrix = np.linalg.eigh(fock_matrix)
@@ -204,7 +247,26 @@ def calculate_energy_scf(hamiltonian_matrix, fock_matrix, density_matrix):
     return energy_scf
 
 def partition_orbitals(fock_matrix):
-    '''Returns a list with the occupied/virtual energies & orbitals defined by the input Fock matrix.'''
+    """
+    Returns a list with the occupied/virtual energies & orbitals defined by the input Fock matrix.
+
+    Parameters
+    ----------
+    fock_matrix: np.array
+        Fock matrix
+
+    Returns
+    -------
+    occupied_energy: np.array
+        an array of energies of occupied orbitals
+    virtual_energy: np.array
+        an array of energies of virtual orbitals
+    occupied_matrix: np.array
+        an array of occupied orbitals
+    virtual_matrix: np.array
+        an array of virtual orbitals
+
+    """
     num_occ = (ionic_charge // 2) * np.size(fock_matrix,
                                             0) // orbitals_per_atom
     orbital_energy, orbital_matrix = np.linalg.eigh(fock_matrix)
