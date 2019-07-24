@@ -1,7 +1,19 @@
 import numpy as np
 
 def atom(ao_index):
-    '''Returns the atom index part of an atomic orbital index.'''
+    """
+    Returns the atom index part of an atomic orbital index.
+
+    Parameters
+    ----------
+    ao_index: int
+        index of the atomic orbital
+
+    Returns
+    -------
+    ao_index // orbitals_per_atom: int
+        index of the atom
+    """
     return ao_index // orbitals_per_atom
 
 def orb(ao_index):
@@ -107,7 +119,23 @@ def coulomb_energy(o1, o2, r12):
     return ans
 
 def pseudopotential_energy(o, r, model_parameters):
-    '''Returns the energy of a pseudopotential between a multipole of type o and an atom separated by a vector r.'''
+    """
+    Returns the energy of a pseudopotential between a multipole of type o and an atom separated by a vector r.
+
+    Parameters
+    ----------
+    o: str
+        orbital type
+    r: np.array
+        pseudo_vector*
+    model_parameters: dict
+        *
+
+    Returns
+    -------
+    ans: float
+        pseudopotential between a multipole of type o and an atom
+    """
     ans = model_parameters['v_pseudo']
     r_rescaled = r / model_parameters['r_pseudo']
     ans *= np.exp(1.0 - np.dot(r_rescaled, r_rescaled))
@@ -223,17 +251,21 @@ def chi_on_atom(o1, o2, o3, model_parameters):
     return 0.0
 
 def calculate_chi_tensor(atomic_coordinates, model_parameters):
-    '''Returns the chi tensor for an input list of atomic coordinates'''
-    ndof = len(atomic_coordinates) * orbitals_per_atom
-    chi_tensor = np.zeros((ndof, ndof, ndof))
-    for p in range(ndof):
-        for orb_q in orbital_types:
-            q = ao_index(atom(p), orb_q)
-            for orb_r in orbital_types:
-                r = ao_index(atom(p), orb_r)
-                chi_tensor[p, q, r] = chi_on_atom(orb(p), orb(q), orb(r),
-                                                  model_parameters)
-    return chi_tensor
+    """
+    Returns the chi tensor for an input list of atomic coordinate.
+
+    Parameters
+    ----------
+    atomic_coordinates: str
+        coordinate of atoms
+    model_parameters: dict
+        *
+
+    Returns
+    -------
+    chi_tensor: np.array
+        An array of transformation rules between atomic orbitals and multipole moments
+    """
 
 def calculate_hamiltonian_matrix(atomic_coordinates, model_parameters):
     """
@@ -275,12 +307,19 @@ def calculate_hamiltonian_matrix(atomic_coordinates, model_parameters):
     return hamiltonian_matrix
 
 def calculate_atomic_density_matrix(atomic_coordinates):
-    '''Returns a trial 1-electron density matrix for an input list of atomic coordinates.'''
-    ndof = len(atomic_coordinates) * orbitals_per_atom
-    density_matrix = np.zeros((ndof, ndof))
-    for p in range(ndof):
-        density_matrix[p, p] = orbital_occupation[orb(p)]
-    return density_matrix
+    """
+    Returns a trial 1-electron density matrix for an input list of atomic coordinates.
+
+    Parameters
+    ----------
+    atomic_coordinates: str
+        coordinate of atoms
+
+    Returns
+    -------
+    density_matrix: np.array
+        1-electron density matrix
+    """
 
 def calculate_fock_matrix(hamiltonian_matrix, interaction_matrix,density_matrix, chi_tensor):
     """Returns the Fock matrix defined by the input Hamiltonian, interaction, & density matrices.
@@ -433,9 +472,28 @@ def partition_orbitals(fock_matrix):
 
     return occupied_energy, virtual_energy, occupied_matrix, virtual_matrix
 
-def transform_interaction_tensor(occupied_matrix, virtual_matrix,
-                                 interaction_matrix, chi_tensor):
-    '''Returns a transformed V tensor defined by the input occupied, virtual, & interaction matrices.'''
+def transform_interaction_tensor(occupied_matrix, virtual_matrix, interaction_matrix, chi_tensor):
+    """
+    Returns a transformed V tensor defined by the input occupied, virtual, & interaction matrices.
+
+    Parameters
+    ----------
+    occupied_matrix: np.array
+        An array of the occupied orbitals
+    virtual_matrix: np.array
+        An array of the occupied orbitals
+    interaction_matrix: np.array
+        The electron-electron interaction energy matrix
+    chi_tensor: np.array
+        An array of transformation rules between atomic orbitals and multipole moments
+
+
+    Returns
+    -------
+    interaction_tensor: np.array
+        An array of the electron-electron interaction energy*.
+    """                           
+    
     chi2_tensor = np.einsum('qa,ri,qrp',
                             virtual_matrix,
                             occupied_matrix,
