@@ -5,7 +5,19 @@ def atom(ao_index):
     return ao_index // orbitals_per_atom
 
 def orb(ao_index):
-    '''Returns the orbital type of an atomic orbital index.'''
+    """
+    Returns the orbital type of an atomic orbital index.
+
+    Parameters
+    ----------
+    ao_index: int
+        index of the atomic orbital
+
+    Returns
+    -------
+    orbital_types[orb_index]: str
+        orbital type
+    """
     orb_index = ao_index % orbitals_per_atom
     return orbital_types[orb_index]
 
@@ -88,7 +100,19 @@ def pseudopotential_energy(o, r, model_parameters):
 
 
 def calculate_energy_ion(atomic_coordinates):
-    '''Returns the ionic contribution to the total energy for an input list of atomic coordinates.'''
+    """
+    Returns the ionic contribution to the total energy for an input list of atomic coordinates.
+
+    Parameters
+    ----------
+    atomic_coordinates: np.array
+        An array of xyz coordinates of atoms
+
+    Returns
+    -------
+    energy_ion: float
+        Ionic energy of the system.
+    """
     energy_ion = 0.0
     for i, r_i in enumerate(atomic_coordinates):
         for j, r_j in enumerate(atomic_coordinates):
@@ -112,7 +136,21 @@ def calculate_potential_vector(atomic_coordinates, model_parameters):
     return potential_vector
 
 def calculate_interaction_matrix(atomic_coordinates, model_parameters):
-    '''Returns the electron-electron interaction energy matrix for an input list of atomic coordinates.'''
+    """
+    Returns the electron-electron interaction energy matrix for an input list of atomic coordinates.
+
+    Parameters
+    ----------
+    atomic_coordinates: np.array
+        An array of xyz coordinates of atoms
+    model_parameters: dict
+        A dictionary of model parameters fit to this data using semiempirical model parameterization.
+
+    Returns
+    -------
+    interaction_matrix: np.array
+        An array of the electron-electron interaction energy.
+    """
     ndof = len(atomic_coordinates)*orbitals_per_atom
     interaction_matrix = np.zeros( (ndof,ndof) )
     for p in range(ndof):
@@ -127,7 +165,25 @@ def calculate_interaction_matrix(atomic_coordinates, model_parameters):
     return interaction_matrix
 
 def chi_on_atom(o1, o2, o3, model_parameters):
-    '''Returns the value of the chi tensor for 3 orbital indices on the same atom.'''
+    """
+    Returns the value of the chi tensor for 3 orbital indices on the same atom.
+
+    Parameters
+    ----------
+    o1: str
+        The orbital type.
+    o2: str
+        The orbital type.
+    o3: str
+        The orbital type.
+    model_parameters: np.array
+        A dictionary of model parameters fit to this data using semiempirical model parameterization.
+
+    Returns
+    -------
+    model_parameters['dipole'] or constant: float
+        The value of the chi tensor.
+    """
     if o1 == o2 and o3 == 's':
         return 1.0
     if o1 == o3 and o3 in p_orbitals and o2 == 's':
@@ -150,7 +206,21 @@ def calculate_chi_tensor(atomic_coordinates, model_parameters):
     return chi_tensor
 
 def calculate_hamiltonian_matrix(atomic_coordinates, model_parameters):
-    '''Returns the 1-body Hamiltonian matrix for an input list of atomic coordinates.'''
+    """
+    Returns the 1-body Hamiltonian matrix for an input list of atomic coordinates.
+
+    Parameters
+    ----------
+    atomic_coordinates: np.array
+        An array of xyz coordinates of atoms
+    model_parameters: dict
+        A dictionary of model parameters fit to this data using semiempirical model parameterization.
+
+    Returns
+    -------
+    hamiltonian_matrix: np.array
+        The 1-body Hamiltonian matrix.
+    """
     ndof = len(atomic_coordinates) * orbitals_per_atom
     hamiltonian_matrix = np.zeros((ndof, ndof))
     potential_vector = calculate_potential_vector(atomic_coordinates,
@@ -222,10 +292,34 @@ def calculate_density_matrix(fock_matrix):
     density_matrix = occupied_matrix @ occupied_matrix.T
     return density_matrix
 
-def scf_cycle(hamiltonian_matrix, interaction_matrix, density_matrix,
-              chi_tensor, max_scf_iterations = 100,
-              mixing_fraction = 0.25, convergence_tolerance = 1e-4):
-    '''Returns converged density & Fock matrices defined by the input Hamiltonian, interaction, & density matrices.'''
+def scf_cycle(hamiltonian_matrix, interaction_matrix, density_matrix,chi_tensor, max_scf_iterations = 100,mixing_fraction = 0.25, convergence_tolerance = 1e-4):
+    """
+    Returns converged density & Fock matrices defined by the input Hamiltonian, interaction, & density matrices.
+
+    Parameters
+    ----------
+    hamiltonian_matrix: np.array
+        The 1-body Hamiltonian matrix.
+    interaction_matrix: np.array
+        The electron-electron interaction energy matrix.
+    density_matrix: np.array
+        The 1-electron density matrix.
+    chi_tensor: np.array
+        An array of transformation rules between atomic orbitals and multipole moments. 
+    max_scf_iterations: int, default is 100
+        The maximum number scf cycles.
+    mixing_fraction: float, default is 0.25
+        The fraction of the density matrix that will be retained for the subsequent cycle.
+    convergence_tolerance: np.exp, default is 1e-4
+        The maximum error tolerance beyond which the the scf calculations will sieze.
+
+    Returns
+    -------
+    new_density_matrix: np.array
+        The converged density matrix.
+    new_fock_matrix: np.array
+        The converged Fock matrix. 
+    """
     old_density_matrix = density_matrix.copy()
     for iteration in range(max_scf_iterations):
         new_fock_matrix = calculate_fock_matrix(hamiltonian_matrix, interaction_matrix, old_density_matrix, chi_tensor)
@@ -241,7 +335,22 @@ def scf_cycle(hamiltonian_matrix, interaction_matrix, density_matrix,
     return new_density_matrix, new_fock_matrix
 
 def calculate_energy_scf(hamiltonian_matrix, fock_matrix, density_matrix):
-    '''Returns the Hartree-Fock total energy defined by the input Hamiltonian, Fock, & density matrices.'''
+    """Returns the Hartree-Fock total energy defined by the input Hamiltonian, Fock, & density matrices.
+
+    Parameters
+    ----------
+    hamiltonian_matrix: np.array
+        The 1-body Hamiltonian matrix.
+    fock_matrix: np.array
+        The Fock matrix.
+    density_matrix: np.array
+        1-electron density matrix
+
+    Returns
+    -------
+    energy_scf: float
+        The Hartree-Fock total energy.
+    """
     energy_scf = np.einsum('pq,pq', hamiltonian_matrix + fock_matrix,
                            density_matrix)
     return energy_scf
