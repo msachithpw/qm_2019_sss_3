@@ -42,7 +42,24 @@ def ao_index(atom_p, orb_p):
     return p
 
 def hopping_energy(o1, o2, r12, model_parameters):
-    '''Returns the hopping matrix element for a pair of orbitals of type o1 & o2 separated by a vector r12.'''
+    """Returns the hopping matrix element for a pair of orbitals of type o1 & o2 separated by a vector r12.
+
+    Parameters
+    ----------
+    o1 : str
+        Orbital type of the 1st atom
+    o2 : str
+        Orbital type of the 2nd atom
+    r12 : np.array
+       A vector pointing from the second to the first atom 
+    model_parameters : dict
+        **A dictionary of model parameters fit to this data using semiempirical model parameterization**
+
+    Returns
+    -------
+    ans : float
+        The answer is the hopping energy.
+    """
     r12_rescaled = r12 / model_parameters['r_hop']
     r12_length = np.linalg.norm(r12_rescaled)
     ans = np.exp( 1.0 - r12_length**2 )
@@ -122,7 +139,20 @@ def calculate_energy_ion(atomic_coordinates):
     return energy_ion
 
 def calculate_potential_vector(atomic_coordinates, model_parameters):
-    '''Returns the electron-ion potential energy vector for an input list of atomic coordinates.'''
+    """Returns the electron-ion potential energy vector for an input list of atomic coordinates.
+
+    Parameters
+    ----------
+    atomic_coordinates: np.array
+        An array of atomic coordinates. 
+    model_parameters: dict
+        A dictionary of model parameters fit to this data using semiempirical model parameterization
+
+    Returns
+    -------
+    potential_vector: np.array
+    An array of electron-ion potential energy vectors for an input list of atomic coordinates.
+    """
     ndof = len(atomic_coordinates) * orbitals_per_atom
     potential_vector = np.zeros(ndof)
     for p in range(ndof):
@@ -252,9 +282,26 @@ def calculate_atomic_density_matrix(atomic_coordinates):
         density_matrix[p, p] = orbital_occupation[orb(p)]
     return density_matrix
 
-def calculate_fock_matrix(hamiltonian_matrix, interaction_matrix,
-                          density_matrix, chi_tensor):
-    '''Returns the Fock matrix defined by the input Hamiltonian, interaction, & density matrices.'''
+def calculate_fock_matrix(hamiltonian_matrix, interaction_matrix,density_matrix, chi_tensor):
+    """Returns the Fock matrix defined by the input Hamiltonian, interaction, & density matrices.
+
+    Parameters
+    ----------
+    hamiltonian_matrix: np.array
+        An array of a list of atomic coordinates.
+    interaction_matrix: np.array
+        An array of electron-electron interaction energies.
+    density_matrix: np.array
+        An array defined by the occupied orbitals, where the lowest-energy orbitals are occupied with all of the electrons available.
+    chi_tensor: np.array
+        An array of transformation rules between atomic orbitals and multiple moments.
+
+    Returns
+    -------
+    fock_matrix: np.array
+        An array consisting of a nonlinear set of equations defined by the input Hamiltonian, interaction, & density matrices.
+
+    """
     fock_matrix = hamiltonian_matrix.copy()
     fock_matrix += 2.0 * np.einsum('pqt,rsu,tu,rs',
                                    chi_tensor,
@@ -402,7 +449,23 @@ def transform_interaction_tensor(occupied_matrix, virtual_matrix,
     return interaction_tensor
 
 def calculate_energy_mp2(fock_matrix, interaction_matrix, chi_tensor):
-    '''Returns the MP2 contribution to the total energy defined by the input Fock & interaction matrices.'''
+    """Returns the MP2 contribution to the total energy defined by the input Fock & interaction matrices.
+
+    Parameters
+    ----------
+    fock_matrix: np.array
+        An array consisting of a nonlinear set of equations defined by the input Hamiltonian, interaction, & density matrices.
+    interaction_matrix: np.array
+        An array of electron-electron interaction energies.
+    chi_tensor: np.array
+        An array of transformation rules between atomic orbitals and multiple moments.
+
+    Returns
+    -------
+    energy_mp2: float
+        The total energy is defined by the input Fock and interaction matrices.
+
+    """
     E_occ, E_virt, occupied_matrix, virtual_matrix = partition_orbitals(
         fock_matrix)
     V_tilde = transform_interaction_tensor(occupied_matrix, virtual_matrix,
