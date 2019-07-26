@@ -19,21 +19,13 @@ def test_qm_2019_sss_3_imported():
     """Sample test, will always pass so long as import statement worked"""
     assert "qm_2019_sss_3" in sys.modules
 
-
-def test_noble_gas_failure_type_error():
+@pytest.mark.parametrize("name,coordinates,error",[(25,np.array([[0.0, 0.0, 0.0], [1.0, 4.0, 5.0]]),TypeError),('abc',np.array([[0.0, 0.0, 0.0], [1.0, 4.0, 5.0]]),NameError)])
+def test_noble_gas_failure_type_error(name,coordinates,error):
     """Testing the noblegas class"""
-    name = 25
-    coordinates = np.array([[0.0, 0.0, 0.0], [1.0, 4.0, 5.0]])
-    with pytest.raises(TypeError):
+    with pytest.raises(error):
         noble_gas = qm_2019_sss_3.NobleGas(name,coordinates)
 
-def test_noble_gas_failure_name_error():
-    name = 'abc'
-    coordinates = np.array([[0.0, 0.0, 0.0], [1.0, 4.0, 5.0]])
-    with pytest.raises(NameError):
-        noble_gas = qm_2019_sss_3.NobleGas(name,coordinates)
-
-def test_noblegas_atom(noble_gas):
+def test_noblegas_atom():
     atom_no = noble_gas.atom(1)
     assert atom_no == 0
 
