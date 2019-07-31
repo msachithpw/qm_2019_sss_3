@@ -3,7 +3,7 @@
 # include <pybind11/eigen.h>
 # include <pybind11/stl.h>
 
-PYBIND11_MODULE(sss_cpp,m)
+PYBIND11_MODULE(qm_project_cpp,m)
 {
 	m.doc() = "This is the c++ module for the scf_cycle";
 	m.def("calculate_fock_matrix_fast",calculate_fock_matrix_fast,"C++ code to calculate fock matrix");
