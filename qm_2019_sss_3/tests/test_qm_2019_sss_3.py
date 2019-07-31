@@ -3,6 +3,7 @@ Unit and regression test for the qm_2019_sss_3 package.
 """
 
 # Import package, test suite, and other packages as needed
+import qm_2019_sss_3
 from qm_2019_sss_3 import noblegas
 import pytest
 import sys
