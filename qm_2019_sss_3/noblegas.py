@@ -1,4 +1,5 @@
 import numpy as np
+from . import qm_project_cpp
 class NobleGas():
     def __init__(self, name,atomic_coordinates):
         if isinstance(name, str):
@@ -494,6 +495,10 @@ class HartreeFock():
         print("WARNING: SCF cycle didn't converge")
 
         return new_density_matrix, new_fock_matrix, hf_energy
+
+    def call_cpp_function(self):
+        fock_matrix = qm_project_cpp.calculate_fock_matrix_fast(self.calculate_hamiltonian_matrix,self.calculate_interaction_matrix,self.calculate_atomic_density_matrix,self.noblegas.model_parameters['dipole'])
+        return fock_matrix
 
 class Mp2(HartreeFock):
     def __init__(self,fock_matrix,noblegas):

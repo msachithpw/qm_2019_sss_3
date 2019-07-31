@@ -68,3 +68,10 @@ def test_calculate_energy_mp2(noble_gas):
         
 def test_qm_project_imported():
         assert "qm_project_cpp" in sys.modules
+
+def test_call_cpp_function(noble_gas):
+        b1 = [[ 5.4e+00 ,2.6e-04 , 3.5e-04 , 4.4e-04 , 6.3e-04 , 5.5e-04  ,7.3e-04 , 9.2e-04],[ 2.6e-04 ,-5.9e-01 , 4.7e-09 , 5.8e-09 ,-5.5e-04 , 3.0e-04  ,2.2e-03 , 2.7e-03],[ 3.5e-04 , 4.7e-09 ,-5.9e-01 , 7.8e-09, -7.3e-04 , 2.2e-03 , 1.6e-03,  3.6e-03],[ 4.4e-04 , 5.8e-09  ,7.8e-09 ,-5.9e-01 ,-9.2e-04  ,2.7e-03 , 3.6e-03  ,3.2e-03],[ 6.3e-04 ,-5.5e-04, -7.3e-04 ,-9.2e-04 , 5.4e+00 ,-2.6e-04 ,-3.5e-04, -4.4e-04],[ 5.5e-04 , 3.0e-04 , 2.2e-03 , 2.7e-03 ,-2.6e-04 ,-5.9e-01,  4.7e-09 , 5.8e-09],[ 7.3e-04  ,2.2e-03  ,1.6e-03 , 3.6e-03 ,-3.5e-04 , 4.7e-09 ,-5.9e-01 , 7.8e-09],[ 9.2e-04 , 2.7e-03 , 3.6e-03  ,3.2e-03 ,-4.4e-04 , 5.8e-09  ,7.8e-09, -5.9e-01]]
+
+        hf = noblegas.HartreeFock(noble_gas)
+        fock_matrix = hf.call_cpp_function()
+        assert np.linalg.norm(fock_matrix-b1) < 0.1 
