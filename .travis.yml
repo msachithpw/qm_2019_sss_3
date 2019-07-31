@@ -43,7 +43,7 @@ install:
   - conda install eigen
 
 script:
-  - pytest -v --cov=qm_2019_sss_3 qm_2019_sss_3/tests
+  - pytest -v --cov=qm_2019_sss_3 
 
 notifications:
     email: false
