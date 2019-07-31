@@ -7,7 +7,6 @@ from qm_2019_sss_3 import noblegas
 import pytest
 import sys
 import numpy as np
-import qm_project_cpp
 
 @pytest.fixture()
 def noble_gas():
