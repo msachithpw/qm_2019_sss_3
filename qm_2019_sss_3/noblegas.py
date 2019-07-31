@@ -367,10 +367,10 @@ class HartreeFock():
         """
         # print(self.ndof)
         density_matrix = np.zeros([self.ndof, self.ndof])
-        print(range(self.ndof))
+        # print(range(self.ndof))
         for p in range(self.ndof):
             density_matrix[p, p] = self.noblegas.orbital_occupation[self.noblegas.orb(p)]
-            print(F"({p},{p}): {self.noblegas.orb(p)}, {self.noblegas.orbital_occupation[self.noblegas.orb(p)]}")
+            # print(F"({p},{p}): {self.noblegas.orb(p)}, {self.noblegas.orbital_occupation[self.noblegas.orb(p)]}")
         return density_matrix
 
     def calculate_fock_matrix(self,density_matrix):
@@ -426,7 +426,7 @@ class HartreeFock():
         occupied_matrix = orbital_matrix[:, :num_occ]
         # print('occ=\n',occupied_matrix)
         density_matrix = occupied_matrix @ occupied_matrix.T
-        print(density_matrix)
+        # print(density_matrix)
         return density_matrix
 
     def calculate_hartree_fock_energy(self, fock_matrix, density_matrix):
@@ -449,7 +449,7 @@ class HartreeFock():
         energy_ionic = self.calculate_energy_ion
         energy_scf = np.einsum('pq,pq', self.calculate_hamiltonian_matrix + fock_matrix, density_matrix)
         energy_hf = energy_ionic + energy_scf
-        print(energy_hf)
+        # print(energy_hf)
         return energy_hf
 
     def scf_cycle(self, max_scf_iterations = 100,mixing_fraction = 0.25, convergence_tolerance = 1e-4):
