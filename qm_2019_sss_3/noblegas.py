@@ -116,10 +116,6 @@ class HartreeFock():
 
         Parameters
         ----------
-        atomic_coordinates: np.array
-            An array of xyz coordinates of atoms
-        model_parameters: dict
-            A dictionary of model parameters fit to this data using semiempirical model parameterization.
 
         Returns
         -------
@@ -149,9 +145,8 @@ class HartreeFock():
         o2 : str
             Orbital type of the 2nd atom
         r12 : np.array
-        A vector pointing from the second to the first atom 
-        model_parameters : dict
-            **A dictionary of model parameters fit to this data using semiempirical model parameterization**
+            A vector pointing from the second to the first atom 
+        
 
         Returns
         -------
@@ -214,8 +209,6 @@ class HartreeFock():
             orbital type
         r: np.array
             pseudo_vector*
-        model_parameters: dict
-            *
 
         Returns
         -------
@@ -236,8 +229,6 @@ class HartreeFock():
 
         Parameters
         ----------
-        atomic_coordinates: np.array
-            An array of xyz coordinates of atoms
 
         Returns
         -------
@@ -258,10 +249,6 @@ class HartreeFock():
 
         Parameters
         ----------
-        atomic_coordinates: np.array
-            An array of atomic coordinates. 
-        model_parameters: dict
-            A dictionary of model parameters fit to this data using semiempirical model parameterization
 
         Returns
         -------
@@ -292,8 +279,6 @@ class HartreeFock():
             The orbital type.
         o3: str
             The orbital type.
-        model_parameters: np.array
-            A dictionary of model parameters fit to this data using semiempirical model parameterization.
 
         Returns
         -------
@@ -315,10 +300,6 @@ class HartreeFock():
 
         Parameters
         ----------
-        atomic_coordinates: str
-            coordinate of atoms
-        model_parameters: dict
-            *
 
         Returns
         -------
@@ -343,10 +324,6 @@ class HartreeFock():
 
         Parameters
         ----------
-        atomic_coordinates: np.array
-            An array of xyz coordinates of atoms
-        model_parameters: dict
-            A dictionary of model parameters fit to this data using semiempirical model parameterization.
 
         Returns
         -------
@@ -382,8 +359,6 @@ class HartreeFock():
 
         Parameters
         ----------
-        atomic_coordinates: str
-            coordinate of atoms
 
         Returns
         -------
@@ -403,14 +378,8 @@ class HartreeFock():
 
         Parameters
         ----------
-        hamiltonian_matrix: np.array
-            An array of a list of atomic coordinates.
-        interaction_matrix: np.array
-            An array of electron-electron interaction energies.
         density_matrix: np.array
             An array defined by the occupied orbitals, where the lowest-energy orbitals are occupied with all of the electrons available.
-        chi_tensor: np.array
-            An array of transformation rules between atomic orbitals and multiple moments.
 
         Returns
         -------
@@ -448,7 +417,7 @@ class HartreeFock():
         Returns
         -------
         density_matrix: np.array
-        1-electron density matrix defined by the input Fock matrix 
+            1-electron density matrix defined by the input Fock matrix 
 
         """
         num_occ = (self.noblegas.ionic_charge // 2) * np.size(fock_matrix,0) // self.noblegas.orbitals_per_atom
@@ -461,6 +430,22 @@ class HartreeFock():
         return density_matrix
 
     def calculate_hartree_fock_energy(self, fock_matrix, density_matrix):
+        """
+        Calculates the Hartree Fock Energy.
+
+        Parameters
+        ----------
+        fock_matrix: np.array
+            An array consisting of a nonlinear set of equations defined by the input Hamiltonian, interaction, & density matrices.
+
+        density_matrix: np.array
+            An array defined by the occupied orbitals, where the lowest-energy orbitals are occupied with all of the electrons available. 
+
+        Returns
+        -------
+        energy_hf: float
+            Hartree Fock energy which is the sum of the ionic energy nad the scf energy
+        """   
         energy_ionic = self.calculate_energy_ion
         energy_scf = np.einsum('pq,pq', self.calculate_hamiltonian_matrix + fock_matrix, density_matrix)
         energy_hf = energy_ionic + energy_scf
@@ -473,14 +458,6 @@ class HartreeFock():
 
         Parameters
         ----------
-        hamiltonian_matrix: np.array
-            The 1-body Hamiltonian matrix.
-        interaction_matrix: np.array
-            The electron-electron interaction energy matrix.
-        density_matrix: np.array
-            The 1-electron density matrix.
-        chi_tensor: np.array
-            An array of transformation rules between atomic orbitals and multipole moments. 
         max_scf_iterations: int, default is 100
             The maximum number scf cycles.
         mixing_fraction: float, default is 0.25
@@ -530,8 +507,6 @@ class Mp2(HartreeFock):
 
         Parameters
         ----------
-        fock_matrix: np.array
-            Fock matrix
 
         Returns
         -------
@@ -589,12 +564,6 @@ class Mp2(HartreeFock):
 
         Parameters
         ----------
-        fock_matrix: np.array
-            An array consisting of a nonlinear set of equations defined by the input Hamiltonian, interaction, & density matrices.
-        interaction_matrix: np.array
-            An array of electron-electron interaction energies.
-        chi_tensor: np.array
-            An array of transformation rules between atomic orbitals and multiple moments.
 
         Returns
         -------
@@ -603,15 +572,8 @@ class Mp2(HartreeFock):
 
         """
         E_occ, E_virt, occupied_matrix, virtual_matrix = self.partition_orbitals()
-        # print('E_occ:\n',E_occ)
-        # print('E_vir:\n',E_virt)
-        # print('occupied_matrix:\n',occupied_matrix)
-        # print('virtual_matrix:\n',virtual_matrix)
-        # print(super().calculate_chi_tensor)
-        # print(super().calculate_interaction_matrix)
         V_tilde = self.transform_interaction_tensor(occupied_matrix, virtual_matrix,
                                             super().calculate_interaction_matrix, super().calculate_chi_tensor)
-        # print('V_tilde:\n',V_tilde)
         energy_mp2 = 0.0
         num_occ = len(E_occ)
         num_virt = len(E_virt)
