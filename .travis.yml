@@ -38,6 +38,9 @@ install:
     # Activate the test environment
   - conda activate test
     # Build and install package
+  - conda install numpy
+    # - conda install pybind11
+    # - conda install eigen
   - python setup.py develop --no-deps
 
 
