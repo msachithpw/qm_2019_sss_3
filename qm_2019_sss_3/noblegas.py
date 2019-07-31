@@ -457,8 +457,15 @@ class HartreeFock():
         occupied_matrix = orbital_matrix[:, :num_occ]
         # print('occ=\n',occupied_matrix)
         density_matrix = occupied_matrix @ occupied_matrix.T
-        # print(density_matrix)
+        print(density_matrix)
         return density_matrix
+
+    def calculate_hartree_fock_energy(self, fock_matrix, density_matrix):
+        energy_ionic = self.calculate_energy_ion
+        energy_scf = np.einsum('pq,pq', self.calculate_hamiltonian_matrix + fock_matrix, density_matrix)
+        energy_hf = energy_ionic + energy_scf
+        print(energy_hf)
+        return energy_hf
 
     def scf_cycle(self, max_scf_iterations = 100,mixing_fraction = 0.25, convergence_tolerance = 1e-4):
         """
@@ -501,119 +508,117 @@ class HartreeFock():
             if error_norm < convergence_tolerance:
                 # print('den:\n',new_density_matrix)
                 # print('fock:\n',new_fock_matrix)
-                return new_density_matrix, new_fock_matrix
+                hf_energy = self.calculate_hartree_fock_energy(new_fock_matrix,new_density_matrix)
+                return new_density_matrix, new_fock_matrix, hf_energy
 
             old_density_matrix = (mixing_fraction * new_density_matrix
                                 + (1.0 - mixing_fraction) * old_density_matrix)
+            hf_energy = self.calculate_hartree_fock_energy(new_fock_matrix,new_density_matrix)
         print("WARNING: SCF cycle didn't converge")
 
-        return new_density_matrix, new_fock_matrix
+        return new_density_matrix, new_fock_matrix, hf_energy
 
-# class Mp2(HartreeFock):
-#     def __init__(self,hf_energy, occupied_energy, interaction_tensor):
-#         self.hf_energy = hf_energy
-#         self.occupied_energy = occupied_energy
-#         self.interaction_tensor = interaction_tensor
-#         super.__init__(self)
+class Mp2(HartreeFock):
+    def __init__(self,fock_matrix,noblegas):
+        self.fock_matrix = fock_matrix
+        self.noblegas = noblegas
+        super().__init__(self.noblegas)
 
-#     def partition_orbitals(fock_matrix):
-#         """
-#         Returns a list with the occupied/virtual energies & orbitals defined by the input Fock matrix.
+    def partition_orbitals(self):
+        """
+        Returns a list with the occupied/virtual energies & orbitals defined by the input Fock matrix.
 
-#         Parameters
-#         ----------
-#         fock_matrix: np.array
-#             Fock matrix
+        Parameters
+        ----------
+        fock_matrix: np.array
+            Fock matrix
 
-#         Returns
-#         -------
-#         occupied_energy: np.array
-#             an array of energies of occupied orbitals
-#         virtual_energy: np.array
-#             an array of energies of virtual orbitals
-#         occupied_matrix: np.array
-#             an array of occupied orbitals
-#         virtual_matrix: np.array
-#             an array of virtual orbitals
+        Returns
+        -------
+        occupied_energy: np.array
+            an array of energies of occupied orbitals
+        virtual_energy: np.array
+            an array of energies of virtual orbitals
+        occupied_matrix: np.array
+            an array of occupied orbitals
+        virtual_matrix: np.array
+            an array of virtual orbitals
 
-#         """
-#         num_occ = (noblegas.ionic_charge // 2) * np.size(fock_matrix,
-#                                                 0) // orbitals_per_atom
-#         orbital_energy, orbital_matrix = np.linalg.eigh(fock_matrix)
-#         occupied_energy = orbital_energy[:num_occ]
-#         virtual_energy = orbital_energy[num_occ:]
-#         occupied_matrix = orbital_matrix[:, :num_occ]
-#         virtual_matrix = orbital_matrix[:, num_occ:]
+        """
+        num_occ = (self.noblegas.ionic_charge // 2) * np.size(self.fock_matrix,
+                                                0) // self.noblegas.orbitals_per_atom
+        orbital_energy, orbital_matrix = np.linalg.eigh(self.fock_matrix)
+        occupied_energy = orbital_energy[:num_occ]
+        virtual_energy = orbital_energy[num_occ:]
+        occupied_matrix = orbital_matrix[:, :num_occ]
+        virtual_matrix = orbital_matrix[:, num_occ:]
 
-#         return occupied_energy, virtual_energy, occupied_matrix, virtual_matrix
+        return occupied_energy, virtual_energy, occupied_matrix, virtual_matrix
 
-#     def transform_interaction_tensor(occupied_matrix, virtual_matrix, interaction_matrix, chi_tensor):
-#         """
-#         Returns a transformed V tensor defined by the input occupied, virtual, & interaction matrices.
+    def transform_interaction_tensor(self,occupied_matrix,virtual_matrix,interaction_matrix, chi_tensor):
+        """
+        Returns a transformed V tensor defined by the input occupied, virtual, & interaction matrices.
 
-#         Parameters
-#         ----------
-#         occupied_matrix: np.array
-#             An array of the occupied orbitals
-#         virtual_matrix: np.array
-#             An array of the occupied orbitals
-#         interaction_matrix: np.array
-#             The electron-electron interaction energy matrix
-#         chi_tensor: np.array
-#             An array of transformation rules between atomic orbitals and multipole moments
+        Parameters
+        ----------
+        occupied_matrix: np.array
+            An array of the occupied orbitals
+        virtual_matrix: np.array
+            An array of the occupied orbitals
+        interaction_matrix: np.array
+            The electron-electron interaction energy matrix
+        chi_tensor: np.array
+            An array of transformation rules between atomic orbitals and multipole moments
 
 
-#         Returns
-#         -------
-#         interaction_tensor: np.array
-#             An array of the electron-electron interaction energy*.
-#         """                           
+        Returns
+        -------
+        interaction_tensor: np.array
+            An array of the electron-electron interaction energy*.
+        """                           
         
-#         chi2_tensor = np.einsum('qa,ri,qrp',
-#                                 virtual_matrix,
-#                                 occupied_matrix,
-#                                 chi_tensor,
-#                                 optimize=True)
-#         interaction_tensor = np.einsum('aip,pq,bjq->aibj',
-#                                     chi2_tensor,
-#                                     interaction_matrix,
-#                                     chi2_tensor,
-#                                     optimize=True)
-#         return interaction_tensor
+        # chi2_tensor = np.einsum('qa,ri,qrp',virtual_matrix,occupied_matrix,chi_tensor,optimize=True)
+        chi2_tensor = np.einsum('qa,ri,qrp', virtual_matrix, occupied_matrix, chi_tensor, optimize=True)
+        # interaction_tensor = np.einsum('aip,pq,bjq->aibj',chi2_tensor,interaction_matrix,chi2_tensor,optimize=True)
+        interaction_tensor = np.einsum('aip,pq,bjq->aibj', chi2_tensor, interaction_matrix, chi2_tensor, optimize=True)
+        # print(interaction_tensor)
+        return interaction_tensor
 
-#     def calculate_energy_mp2(fock_matrix, interaction_matrix, chi_tensor):
-#         """Returns the MP2 contribution to the total energy defined by the input Fock & interaction matrices.
+    def calculate_energy_mp2(self):
+        """Returns the MP2 contribution to the total energy defined by the input Fock & interaction matrices.
 
-#         Parameters
-#         ----------
-#         fock_matrix: np.array
-#             An array consisting of a nonlinear set of equations defined by the input Hamiltonian, interaction, & density matrices.
-#         interaction_matrix: np.array
-#             An array of electron-electron interaction energies.
-#         chi_tensor: np.array
-#             An array of transformation rules between atomic orbitals and multiple moments.
+        Parameters
+        ----------
+        fock_matrix: np.array
+            An array consisting of a nonlinear set of equations defined by the input Hamiltonian, interaction, & density matrices.
+        interaction_matrix: np.array
+            An array of electron-electron interaction energies.
+        chi_tensor: np.array
+            An array of transformation rules between atomic orbitals and multiple moments.
 
-#         Returns
-#         -------
-#         energy_mp2: float
-#             The total energy is defined by the input Fock and interaction matrices.
+        Returns
+        -------
+        energy_mp2: float
+            The total energy is defined by the input Fock and interaction matrices.
 
-#         """
-#         E_occ, E_virt, occupied_matrix, virtual_matrix = partition_orbitals(
-#             fock_matrix)
-#         V_tilde = transform_interaction_tensor(occupied_matrix, virtual_matrix,
-#                                             interaction_matrix, chi_tensor)
-
-#         energy_mp2 = 0.0
-#         num_occ = len(E_occ)
-#         num_virt = len(E_virt)
-#         for a in range(num_virt):
-#             for b in range(num_virt):
-#                 for i in range(num_occ):
-#                     for j in range(num_occ):
-#                         energy_mp2 -= (
-#                             (2.0 * V_tilde[a, i, b, j]**2 -
-#                             V_tilde[a, i, b, j] * V_tilde[a, j, b, i]) /
-#                             (E_virt[a] + E_virt[b] - E_occ[i] - E_occ[j]))
-#         return energy_mp2
+        """
+        E_occ, E_virt, occupied_matrix, virtual_matrix = self.partition_orbitals()
+        # print('E_occ:\n',E_occ)
+        # print('E_vir:\n',E_virt)
+        # print('occupied_matrix:\n',occupied_matrix)
+        # print('virtual_matrix:\n',virtual_matrix)
+        # print(super().calculate_chi_tensor)
+        # print(super().calculate_interaction_matrix)
+        V_tilde = self.transform_interaction_tensor(occupied_matrix, virtual_matrix,
+                                            super().calculate_interaction_matrix, super().calculate_chi_tensor)
+        # print('V_tilde:\n',V_tilde)
+        energy_mp2 = 0.0
+        num_occ = len(E_occ)
+        num_virt = len(E_virt)
+        for a in range(num_virt):
+            for b in range(num_virt):
+                for i in range(num_occ):
+                    for j in range(num_occ):
+                        energy_mp2 -= ((2.0 * V_tilde[a, i, b, j]**2 - V_tilde[a, i, b, j] * V_tilde[a, j, b, i]) / (E_virt[a] + E_virt[b] - E_occ[i] - E_occ[j]))
+        return energy_mp2
 
