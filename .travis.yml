@@ -41,11 +41,10 @@ install:
   - conda install numpy
   - conda install pybind11
   - conda install eigen
-  - python setup.py develop --no-deps
-
+  - pip install -e .
 
 script:
-  - pytest -v --cov=qm_2019_sss_3 qm_2019_sss_3/tests/
+  - pytest -v --cov=qm_2019_sss_3 qm_2019_sss_3/te
 
 notifications:
     email: false
