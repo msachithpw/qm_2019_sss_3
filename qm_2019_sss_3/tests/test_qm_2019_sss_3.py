@@ -7,6 +7,7 @@ from qm_2019_sss_3 import noblegas
 import pytest
 import sys
 import numpy as np
+import qm_project_cpp
 
 @pytest.fixture()
 def noble_gas():
@@ -65,3 +66,5 @@ def test_calculate_energy_mp2(noble_gas):
 
         assert energy_mp2 == pytest.approx(-0.0012786819552120972,0.1)
         
+def test_qm_project_imported():
+        assert "qm_project_cpp" in sys.modules
