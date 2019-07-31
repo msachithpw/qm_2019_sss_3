@@ -5,7 +5,7 @@ A short description of the project.
 import sys
 import os
 import platform
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 import versioneer
 
 short_description = __doc__.split("\n")
