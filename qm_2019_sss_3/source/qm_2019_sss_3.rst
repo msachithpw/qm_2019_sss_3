@@ -1,0 +1,21 @@
+qm\_2019\_sss\_3 Package
+==========================
+
+Submodules
+----------
+
+qm\_2019\_sss\_3.HartreeFock.scf_cycle module
+---------------------------------
+
+.. automodule:: qm_2019_sss.3.HartreeFock.scf_cycle
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: qm\_2019\_sss\_3
+   :members:
+   :undoc-members:
+   :show-inheritance:
