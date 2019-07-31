@@ -33,7 +33,7 @@ eigen_path = os.path.join(conda_prefix, 'include', 'eigen3')
 if sys.platform == 'darwin':
     os.environ['MACOSX_DEPLOYMENT_TARGET'] = platform.mac_ver()[0]
 
-cpp_module = Extension('qm_project.qm_project_cpp',
+cpp_module = Extension('qm_2019_sss_3.noblegas',
                         include_dirs = [eigen_path],
                         extra_compile_args = ['-std=c++11'],
                         sources = ['qm_project_cpp/qm_project.cpp',
