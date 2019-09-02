@@ -75,4 +75,5 @@ def test_call_cpp_function(noble_gas):
 
         hf = noblegas.HartreeFock(noble_gas)
         fock_matrix = hf.call_cpp_function()
-        assert np.linalg.norm(fock_matrix-b1) < 0.1 
+
+        assert np.linalg.norm(fock_matrix-b1) < 0.1
