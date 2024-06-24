@@ -266,6 +266,14 @@ def calculate_chi_tensor(atomic_coordinates, model_parameters):
     chi_tensor: np.array
         An array of transformation rules between atomic orbitals and multipole moments
     """
+    chi_tensor = np.zeros((self.ndof, self.ndof, self.ndof))
+       for p in range(self.ndof):
+           for orb_q in model.orbital_types:
+               q = p % model.orbitals_per_atom + model.orbital_types.index(orb_q)
+               for orb_r in model.orbital_types:
+                   r = p % model.orbitals_per_atom + model.orbital_types.index(orb_r)
+                   chi_tensor[p, q, r] = self.chi_on_atom(self.orb(p), self.orb(q), self.orb(r), model)
+    return chi_tensor
 
 def calculate_hamiltonian_matrix(atomic_coordinates, model_parameters):
     """

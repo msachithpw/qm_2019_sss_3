@@ -3,7 +3,9 @@ qm_2019_sss_3
 A short description of the project.
 """
 import sys
-from setuptools import setup, find_packages
+import os
+import platform
+from setuptools import setup, find_packages, Extension
 import versioneer
 
 short_description = __doc__.split("\n")
@@ -18,6 +20,25 @@ try:
 except:
     long_description = "\n".join(short_description[2:]),
 
+#################################################################
+# Build our C++ module
+# NOTE: Pybind11/Eigen were installed into CONDA_PREFIX
+#       so we need to add that to the include paths
+conda_prefix = os.environ['CONDA_PREFIX']
+eigen_path = os.path.join(conda_prefix, 'include', 'eigen3')
+
+# MacOSX causes some problems. This is due to a recent
+# deprecation of the stdc++ library
+
+if sys.platform == 'darwin':
+    os.environ['MACOSX_DEPLOYMENT_TARGET'] = platform.mac_ver()[0]
+
+cpp_module = Extension('qm_2019_sss_3.qm_project_cpp',
+                        include_dirs = [eigen_path],
+                        extra_compile_args = ['-std=c++11'],
+                        sources = ['qm_project_cpp/qm_project.cpp',
+                                   'qm_project_cpp/export.cpp'])
+#################################################################
 
 setup(
     # Self-descriptive entries which should always be present
@@ -43,7 +64,7 @@ setup(
 
     # Allows `setup.py test` to work correctly with pytest
     setup_requires=[] + pytest_runner,
-
+    ext_modules = [cpp_module]
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     # url='http://www.my_package.com',  # Website
     # install_requires=[],              # Required packages, pulls from pip if needed; do not use for Conda deployment

@@ -6,11 +6,17 @@
 Welcome to qm_2019_sss_3's documentation!
 =========================================================
 
+Available classes:
+
+ - *NobleGas*
+ - *HartreeFock*
+ - *Mp2*
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-
+   api
 
 Indices and tables
 ==================
